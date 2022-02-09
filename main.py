@@ -339,6 +339,7 @@ for run in range(N_RUNS):
         prediction = clf.predict(img.reshape(-1, N_BANDS))
         save_model(clf, MODEL, DATASET)
         prediction = prediction.reshape(img.shape[:2])
+    
     elif MODEL == "SVM":
         X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
         class_weight = "balanced" if CLASS_BALANCING else None
@@ -347,6 +348,7 @@ for run in range(N_RUNS):
         save_model(clf, MODEL, DATASET)
         prediction = clf.predict(img.reshape(-1, N_BANDS))
         prediction = prediction.reshape(img.shape[:2])
+    
     elif MODEL == "SGD":
         X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
         X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
@@ -360,6 +362,7 @@ for run in range(N_RUNS):
         save_model(clf, MODEL, DATASET)
         prediction = clf.predict(scaler.transform(img.reshape(-1, N_BANDS)))
         prediction = prediction.reshape(img.shape[:2])
+    
     elif MODEL == "nearest":
         from sklearn.neighbors import KNeighborsClassifier
         X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
@@ -373,6 +376,7 @@ for run in range(N_RUNS):
         save_model(clf, MODEL, DATASET)
         prediction = clf.predict(img.reshape(-1, N_BANDS))
         prediction = prediction.reshape(img.shape[:2])
+    
     elif MODEL == "randomForest":
         from sklearn.ensemble import RandomForestClassifier
         X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
@@ -381,6 +385,16 @@ for run in range(N_RUNS):
         clf = RandomForestClassifier()
         clf.fit(X_train, y_train)
         save_model(clf, MODEL, DATASET)
+        prediction = clf.predict(img.reshape(-1, N_BANDS)) #give the whole dataset
+        prediction = prediction.reshape(img.shape[:2])
+    elif MODEL == "threeLayer":
+        from sklearn.ensemble import RandomForestClassifier
+        X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
+        X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
+        class_weight = "balanced" if CLASS_BALANCING else None
+        clf = RandomForestClassifier()
+        clf.fit(X_train, y_train)
+        #save_model(clf, MODEL, DATASET)
         prediction = clf.predict(img.reshape(-1, N_BANDS))
         prediction = prediction.reshape(img.shape[:2])
     else:
