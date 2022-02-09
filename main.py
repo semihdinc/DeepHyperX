@@ -57,11 +57,10 @@ dataset_names = [
 parser = argparse.ArgumentParser(
     description="Run deep learning experiments on" " various hyperspectral datasets"
 )
-parser.add_argument(
-    "--dataset", type=str, default=None, choices=dataset_names, help="Dataset to use."
+parser.add_argument("--dataset", 
+    type=str, default=None, choices=dataset_names, help="Dataset to use."
 )
-parser.add_argument(
-    "--model",
+parser.add_argument("--model",
     type=str,
     default=None,
     help="Model to train. Available:\n"
@@ -80,22 +79,22 @@ parser.add_argument(
     "liu (3D semi-supervised CNN), "
     "mou (1D RNN)",
 )
-parser.add_argument(
-    "--folder",
+parser.add_argument("--folder",
     type=str,
     help="Folder where to store the "
     "datasets (defaults to the current working directory).",
     default="./Datasets/",
 )
-parser.add_argument(
-    "--cuda",
+parser.add_argument("--cuda",
     type=int,
     default=-1,
     help="Specify CUDA device (defaults to -1, which learns on CPU)",
 )
-parser.add_argument("--runs", type=int, default=1, help="Number of runs (default: 1)")
-parser.add_argument(
-    "--restore",
+parser.add_argument("--runs", 
+    type=int, 
+    default=1, 
+    help="Number of runs (default: 1)")
+parser.add_argument("--restore",
     type=str,
     default=None,
     help="Weights to use for initialization, e.g. a checkpoint",
@@ -103,83 +102,74 @@ parser.add_argument(
 
 # Dataset options
 group_dataset = parser.add_argument_group("Dataset")
-group_dataset.add_argument(
-    "--training_sample",
+group_dataset.add_argument("--training_sample",
     type=float,
     default=10,
     help="Percentage of samples to use for training (default: 10%%)",
 )
-group_dataset.add_argument(
-    "--sampling_mode",
+group_dataset.add_argument("--sampling_mode",
     type=str,
     help="Sampling mode" " (random sampling or disjoint, default: random)",
     default="random",
 )
-group_dataset.add_argument(
-    "--train_set",
+group_dataset.add_argument("--train_set",
     type=str,
     default=None,
     help="Path to the train ground truth (optional, this "
     "supersedes the --sampling_mode option)",
 )
-group_dataset.add_argument(
-    "--test_set",
+group_dataset.add_argument("--test_set",
     type=str,
     default=None,
     help="Path to the test set (optional, by default "
     "the test_set is the entire ground truth minus the training)",
 )
+
 # Training options
 group_train = parser.add_argument_group("Training")
-group_train.add_argument(
-    "--epoch",
+group_train.add_argument("--epoch",
     type=int,
     help="Training epochs (optional, if" " absent will be set by the model)",
 )
-group_train.add_argument(
-    "--patch_size",
+group_train.add_argument("--patch_size",
     type=int,
     help="Size of the spatial neighbourhood (optional, if "
     "absent will be set by the model)",
 )
-group_train.add_argument(
-    "--lr", type=float, help="Learning rate, set by the model if not specified."
+group_train.add_argument("--lr", 
+ type=float, help="Learning rate, set by the model if not specified."
 )
-group_train.add_argument(
-    "--class_balancing",
+group_train.add_argument("--class_balancing",
     action="store_true",
     help="Inverse median frequency class balancing (default = False)",
 )
-group_train.add_argument(
-    "--batch_size",
+group_train.add_argument("--batch_size",
     type=int,
     help="Batch size (optional, if absent will be set by the model",
 )
-group_train.add_argument(
-    "--test_stride",
+group_train.add_argument("--test_stride",
     type=int,
     default=1,
     help="Sliding window step stride during inference (default = 1)",
 )
+
 # Data augmentation parameters
 group_da = parser.add_argument_group("Data augmentation")
-group_da.add_argument(
-    "--flip_augmentation", action="store_true", help="Random flips (if patch_size > 1)"
+group_da.add_argument("--flip_augmentation", 
+  action="store_true", help="Random flips (if patch_size > 1)"
 )
-group_da.add_argument(
-    "--radiation_augmentation",
+group_da.add_argument("--radiation_augmentation",
     action="store_true",
     help="Random radiation noise (illumination)",
 )
-group_da.add_argument(
-    "--mixture_augmentation", action="store_true", help="Random mixes between spectra"
+group_da.add_argument("--mixture_augmentation", 
+  action="store_true", help="Random mixes between spectra"
 )
 
-parser.add_argument(
-    "--with_exploration", action="store_true", help="See data exploration visualization"
+parser.add_argument("--with_exploration", 
+    action="store_true", help="See data exploration visualization"
 )
-parser.add_argument(
-    "--download",
+parser.add_argument("--download",
     type=str,
     default=None,
     nargs="+",
@@ -189,39 +179,52 @@ parser.add_argument(
 
 
 args = parser.parse_args()
-
 CUDA_DEVICE = get_device(args.cuda)
 
 # % of training samples
 SAMPLE_PERCENTAGE = args.training_sample
+
 # Data augmentation ?
 FLIP_AUGMENTATION = args.flip_augmentation
 RADIATION_AUGMENTATION = args.radiation_augmentation
 MIXTURE_AUGMENTATION = args.mixture_augmentation
+
 # Dataset name
 DATASET = args.dataset
+
 # Model name
 MODEL = args.model
+
 # Number of runs (for cross-validation)
 N_RUNS = args.runs
+
 # Spatial context size (number of neighbours in each spatial direction)
 PATCH_SIZE = args.patch_size
+
 # Add some visualization of the spectra ?
 DATAVIZ = args.with_exploration
+
 # Target folder to store/download/load the datasets
 FOLDER = args.folder
+
 # Number of epochs to run
 EPOCH = args.epoch
+
 # Sampling mode, e.g random sampling
 SAMPLING_MODE = args.sampling_mode
+
 # Pre-computed weights to restore
 CHECKPOINT = args.restore
+
 # Learning rate for the SGD
 LEARNING_RATE = args.lr
+
 # Automated class balancing
 CLASS_BALANCING = args.class_balancing
+
 # Training ground truth file
 TRAIN_GT = args.train_set
+
 # Testing ground truth file
 TEST_GT = args.test_set
 TEST_STRIDE = args.test_stride
@@ -237,10 +240,13 @@ if not viz.check_connection:
 
 
 hyperparams = vars(args)
+
 # Load the dataset
 img, gt, LABEL_VALUES, IGNORED_LABELS, RGB_BANDS, palette = get_dataset(DATASET, FOLDER)
+
 # Number of classes
 N_CLASSES = len(LABEL_VALUES)
+
 # Number of bands (last dimension of the image tensor)
 N_BANDS = img.shape[-1]
 
@@ -290,6 +296,7 @@ if DATAVIZ:
     plot_spectrums(mean_spectrums, viz, title="Mean spectrum/class")
 
 results = []
+
 # run the experiment several times
 for run in range(N_RUNS):
     if TRAIN_GT is not None and TEST_GT is not None:
@@ -354,14 +361,24 @@ for run in range(N_RUNS):
         prediction = clf.predict(scaler.transform(img.reshape(-1, N_BANDS)))
         prediction = prediction.reshape(img.shape[:2])
     elif MODEL == "nearest":
+        from sklearn.neighbors import KNeighborsClassifier
         X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
         X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
         class_weight = "balanced" if CLASS_BALANCING else None
-        clf = sklearn.neighbors.KNeighborsClassifier(weights="distance")
+        clf = KNeighborsClassifier(weights="distance")
         clf = sklearn.model_selection.GridSearchCV(
             clf, {"n_neighbors": [1, 3, 5, 10, 20]}, verbose=5, n_jobs=4
         )
         clf.fit(X_train, y_train)
+        save_model(clf, MODEL, DATASET)
+        prediction = clf.predict(img.reshape(-1, N_BANDS))
+        prediction = prediction.reshape(img.shape[:2])
+    elif MODEL == "randomForest":
+        from sklearn.ensemble import RandomForestClassifier
+        X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
+        X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
+        class_weight = "balanced" if CLASS_BALANCING else None
+        clf = RandomForestClassifier()
         clf.fit(X_train, y_train)
         save_model(clf, MODEL, DATASET)
         prediction = clf.predict(img.reshape(-1, N_BANDS))
