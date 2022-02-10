@@ -397,20 +397,23 @@ for run in range(N_RUNS):
         X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
         class_weight = "balanced" if CLASS_BALANCING else None
         
+        #Train the first layer of the system.
         clf = threeLayerHSIClassification() 
         clf.fit(X_train, y_train)
         
+        #transform training samples for Random Forest (Second Layer)
         X_train_transformed = clf.transform(X_train)     
-        
         rf = RandomForestClassifier(n_estimators=500)
         rf.fit(X_train_transformed, y_train)
         
+        #transform all dataset for generating the whole image
         X_transformed = clf.transform(img.reshape(-1, N_BANDS))
         
         #save_model(clf, MODEL, DATASET)
         prediction = rf.predict(X_transformed)
         prediction = prediction.reshape(img.shape[:2])
         
+        #Third layer starts here. GMF is applied to prediction image
         prediction = guidedMedianFilter(prediction,img)
     else:
         if CLASS_BALANCING:
