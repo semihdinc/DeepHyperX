@@ -387,16 +387,31 @@ for run in range(N_RUNS):
         save_model(clf, MODEL, DATASET)
         prediction = clf.predict(img.reshape(-1, N_BANDS)) #give the whole dataset
         prediction = prediction.reshape(img.shape[:2])
+    
     elif MODEL == "threeLayer":
+        from three_layer_classification.three_layer_model import threeLayerHSIClassification
+        from three_layer_classification.guidedMedianFilter import guidedMedianFilter
         from sklearn.ensemble import RandomForestClassifier
+
         X_train, y_train = build_dataset(img, train_gt, ignored_labels=IGNORED_LABELS)
         X_train, y_train = sklearn.utils.shuffle(X_train, y_train)
         class_weight = "balanced" if CLASS_BALANCING else None
-        clf = RandomForestClassifier()
+        
+        clf = threeLayerHSIClassification() 
         clf.fit(X_train, y_train)
+        
+        X_train_transformed = clf.transform(X_train)     
+        
+        rf = RandomForestClassifier(n_estimators=500)
+        rf.fit(X_train_transformed, y_train)
+        
+        X_transformed = clf.transform(img.reshape(-1, N_BANDS))
+        
         #save_model(clf, MODEL, DATASET)
-        prediction = clf.predict(img.reshape(-1, N_BANDS))
+        prediction = rf.predict(X_transformed)
         prediction = prediction.reshape(img.shape[:2])
+        
+        prediction = guidedMedianFilter(prediction,img)
     else:
         if CLASS_BALANCING:
             weights = compute_imf_weights(train_gt, N_CLASSES, IGNORED_LABELS)
